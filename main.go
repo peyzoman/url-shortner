@@ -2,14 +2,16 @@ package main
 
 import (
 	"log"
+	"os"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/joho/godotenv"
+	"github.com/peyzoman/url-shortner/handlers"
 )
 
 func setupRoutes(app *fiber.App) {
-
+	app.Post("/api/v1/shorten", handlers.ShortenHandler)
 }
 
 func main() {
@@ -21,5 +23,5 @@ func main() {
 	app := fiber.New()
 	app.Use(logger.New())
 	setupRoutes(app)
-	app.Listen(":3000")
+	app.Listen(os.Getenv("APP_PORT"))
 }

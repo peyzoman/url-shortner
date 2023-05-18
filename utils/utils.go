@@ -1,8 +1,6 @@
-package main
+package utils
 
-import (
-	"strings"
-)
+import "strings"
 
 // By removing special characters from base64 we get the following characters
 const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"

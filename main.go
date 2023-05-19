@@ -11,7 +11,7 @@ import (
 )
 
 func setupRoutes(app *fiber.App) {
-	app.Post("/api/v1/shorten", handlers.ShortenHandler)
+	app.Post("/api/v1/shorten", handlers.Shorten)
 	app.Get("/:url", handlers.Resolve)
 }
 

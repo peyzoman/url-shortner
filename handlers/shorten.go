@@ -15,14 +15,14 @@ import (
 )
 
 type request struct {
-	URL      string        `json:"url"`
-	ShortURL string        `json:"short_url"`
-	Expiry   time.Duration `json:"expiry"`
+	URL    string        `json:"url"`
+	Short  string        `json:"short"`
+	Expiry time.Duration `json:"expiry"`
 }
 
 type response struct {
 	URL             string        `json:"url"`
-	ShortURL        string        `json:"short_url"`
+	Short           string        `json:"short"`
 	Expiry          time.Duration `json:"expiry"`
 	XRateRemaining  int           `json:"rate_limit"`
 	XRateLimitReset time.Duration `json:"rate_limit_reset"`
@@ -46,14 +46,14 @@ func Shorten(ctx *fiber.Ctx) error {
 		_ = r1.Set(database.Ctx, ctx.IP(), os.Getenv("API_QUOTA"), 30*60*time.Second).Err()
 	} else if err != nil {
 		return err
-	}
-
-	valInt, _ := strconv.Atoi(val)
-	if valInt <= 0 {
-		return ctx.Status(http.StatusServiceUnavailable).JSON(fiber.Map{
-			"error":            "rate limit exceeded",
-			"rate_limit_reset": limit / time.Nanosecond / time.Minute,
-		})
+	} else if err == nil {
+		valInt, _ := strconv.Atoi(val)
+		if valInt <= 0 {
+			return ctx.Status(http.StatusServiceUnavailable).JSON(fiber.Map{
+				"error":            "rate limit exceeded",
+				"rate_limit_reset": limit / time.Nanosecond / time.Minute,
+			})
+		}
 	}
 
 	// check if the input is an actual URL
@@ -66,10 +66,10 @@ func Shorten(ctx *fiber.Ctx) error {
 	}
 
 	var id string
-	if body.ShortURL == "" {
+	if body.Short == "" {
 		id = utils.Base62Encode(rand.Uint64())
 	} else {
-		id = body.ShortURL
+		id = body.Short
 	}
 
 	r := database.CreateClient(0)
@@ -98,7 +98,7 @@ func Shorten(ctx *fiber.Ctx) error {
 
 	resp := &response{
 		URL:             body.URL,
-		ShortURL:        "",
+		Short:           "",
 		Expiry:          body.Expiry,
 		XRateRemaining:  defaultAPIQuota,
 		XRateLimitReset: 30,
@@ -111,7 +111,7 @@ func Shorten(ctx *fiber.Ctx) error {
 
 	resp.XRateRemaining = int(remainingQuota)
 	resp.XRateRemaining = int(limit / time.Nanosecond / time.Minute)
-	resp.ShortURL = os.Getenv("DOMAIN") + "/" + id
+	resp.Short = os.Getenv("DOMAIN") + "/" + id
 
 	return ctx.Status(http.StatusOK).JSON(resp)
 }
